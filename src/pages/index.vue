@@ -1,319 +1,49 @@
 <script setup lang="ts">
-// import { createFile } from "../index"
 
 const nuxtDirectories = [
   "assets", "components", "composables", "layouts", "middleware", "pages", "plugins", "server", "utils"
 ]
 
-
-// App State
 const selectedModules = ref<Array<Module>>([])
+
 const selectedDirectories = ref<Array<string>>(["public"])
+
 const srcDir = ref("src")
+
 const projectName = ref("nuxt-app")
 
 const modulesList = computed(() => {
   return selectedModules.value.map(module => module.value)
 })
 
-async function createProject() {
-  const dirHandle = await window.showDirectoryPicker();
+async function scaffoldApp() {
+  const dirPickerHandle = await window.showDirectoryPicker();
+  const rootDir = await createDirectory(dirPickerHandle, projectName.value)
+  const srcDirHandle = await createDirectory(rootDir, srcDir.value)
 
-  await generateDirectories(dirHandle, selectedDirectories.value)
-  await generateModuleDependentDirectories(dirHandle, selectedModules.value)
-  await generateAppDotVueFile(dirHandle, selectedDirectories.value.includes("pages"), selectedDirectories.value.includes("layouts"))
+  await generateDirectories(srcDirHandle, selectedDirectories.value)
+  await generateModuleDependentDirectories(srcDirHandle, selectedModules.value)
+  await generateAppDotVueFile(srcDirHandle, selectedDirectories.value.includes("pages"), selectedDirectories.value.includes("layouts"))
 
   // use the same root handle these
-  await generatePackageDotJsonFile(dirHandle, projectName.value, selectedModules.value)
-  await generateNuxtConfigFile(dirHandle, srcDir.value, modulesList.value)
-  await generateReadmeFile(dirHandle)
-  await generateGitignoreFile(dirHandle)
+  await generatePackageDotJsonFile(rootDir, projectName.value, selectedModules.value)
+  await generateNuxtConfigFile(rootDir, srcDir.value, modulesList.value)
+  await generateReadmeFile(rootDir)
+  await generateGitignoreFile(rootDir)
   if (modulesList.value.includes('@nuxtjs/tailwindcss')) {
-    await generateTailwindConfigFile(dirHandle)
+    await generateTailwindConfigFile(rootDir)
   }
-  await generateTSConfigFile(dirHandle)
+  await generateTSConfigFile(rootDir)
 }
 
+// suggested nuxt modules - tailwindcss, i18n, color-mode, vue use, pinia
+// official modules, nuxt image, test-utils, content, ui, eslint, fonts, scripts,
 
-async function generateLayoutsDirectory(handle: any) {
-  await createDirectoryWithSingleFile(handle, "layouts", "default.vue", `
-<template>
-  <div>
-    <slot />
-  </div>
-</template>
-  `)
-}
-
-
-async function generateServerDirectory(handle: any) {
-  await createDirectoryWithSingleFile(handle, "server", "tsconfig.json", `
-{
-  "extends": "../.nuxt/tsconfig.server.json"
-}
-  `)
-}
-
-async function generateReadmeFile(rootHandle: any) {
-  const content = `# Nuxt 3 Minimal Starter
-
-Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
-
-## Setup
-
-Make sure to install the dependencies:
-
-\`\`\`bash
-# npm
-npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
-\`\`\`
-
-## Development Server
-
-Start the development server on \`http://localhost:3000\`:
-
-\`\`\`bash
-# npm
-npm run dev
-
-# pnpm
-pnpm run dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
-\`\`\`
-
-## Production
-
-Build the application for production:
-
-\`\`\`bash
-# npm
-npm run build
-
-# pnpm
-pnpm run build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-\`\`\`
-
-Locally preview production build:
-
-\`\`\`bash
-# npm
-npm run preview
-
-# pnpm
-pnpm run preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-\`\`\`
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.`;
-
-  await createFile(rootHandle, "README.md", content)
-}
-
-
-
-async function generateGitignoreFile(rootHandle: any) {
-  await createFile(rootHandle, ".gitignore", `# Nuxt dev/build outputs
-.output
-.data
-.nuxt
-.nitro
-.cache
-dist
-
-# Node dependencies
-node_modules
-
-# Logs
-logs
-*.log
-
-# Misc
-.DS_Store
-.fleet
-.idea
-
-# Local env files
-.env
-.env.*
-!.env.example
-
-  `)
-}
-
-async function generateTailwindConfigFile(rootHandle: any) {
-  await createFile(rootHandle, "tailwind.config.ts", `import type { Config } from "tailwindcss"\n
-export default <Partial<Config>>{
-	content: [
-	],
-	theme: {
-		extend: {},
-	},
-}
-`)
-}
-
-async function generateTSConfigFile(rootHandle: any) {
-  await createFile(rootHandle, "tsconfig.json", `{
-  // https://nuxt.com/docs/guide/concepts/typescript
-  "extends": "./.nuxt/tsconfig.json"
-}
-`)
-}
-
-async function generatePagesDirectory(handle: any) {
-  await createDirectoryWithSingleFile(handle, "pages", "index.vue", `<template>
-  <div>
-    Nuxt Application Scaffold
-  </div>
-</template>
-`)
-}
-
-async function generateAppDotVueFile(handle: any, pagesExist?: boolean, layoutExists?: boolean) {
-  let content = `<template>
-  <h1>Hello World!</h1>
-</template>`
-
-  const pageContent = `<template>
-  <div>
-    <NuxtPage/>
-  </div>
-</template>`
-
-  const layoutContent = `<template>
-  <div>
-    <NuxtLayout>
-      <NuxtPage/> 
-    </NuxtLayout>
-  </div>
-</template>`
-
-  if (pagesExist) {
-    content = pageContent
-  }
-  if (layoutExists) {
-    content = layoutContent
-  }
-
-  await createFile(handle, "app.vue", content)
-}
-
-async function generateDirectories(handle: any, directories: Array<string>) {
-  directories.forEach(async (directory: string) => {
-    if (directory == 'layouts') {
-      return await generateLayoutsDirectory(handle)
-    }
-    if (directory == 'server') {
-      return await generateServerDirectory(handle)
-    }
-    if (directory == "pages") {
-      return await generatePagesDirectory(handle)
-    }
-    await createDirectory(handle, directory)
-  })
-}
-
-async function generateModuleDependentDirectories(handle: any, modules: Array<Module>) {
-  modules.forEach(async (module: Module) => {
-    if (module.directories) {
-      module.directories.forEach(async (directory) => {
-        await createDirectory(handle, directory)
-      })
-    }
-  })
-}
-
-
-async function generateNuxtConfigFile(handle: any, srcDir: string, modules: Array<string>) {
-  let generatedModules = `${modules.map(module => `"${module}"`)}`
-  let content = `
-  // https://nuxt.com/docs/api/configuration/nuxt-config
-  export default defineNuxtConfig({
-    devtools: { enabled: true },
-    srcDir: "${srcDir}",
-    modules: [${generatedModules}],
-  })
-  `
-  await createFile(handle, "nuxt.config.ts", content)
-}
-
-
-async function generatePackageDotJsonFile(handle: any, projectName: string, modules: Array<Module>) {
-
-  const devDependencies = `${modules.filter(module => module.devDependency == true).map(module => `    "${module.value}": "${module.version}"`).join(",\n")}`
-  const dependencies = `${modules.filter(module => module.devDependency == false).map(module => `    "${module.value}": "${module.version}"`).join(",\n")}`
-
-  let content = `
-  {
-  "name": "${projectName.split(" ").join("-")}",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "build": "nuxt build",
-    "dev": "nuxt dev",
-    "generate": "nuxt generate",
-    "preview": "nuxt preview",
-    "postinstall": "nuxt prepare",
-    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
-  },
-  "devDependencies": {\n${devDependencies}\n  },
-  "dependencies": {\n${dependencies}\n  }
-}
-  `
-  await createFile(handle, "package.json", content)
-}
-
-
-// generate stores directory
-
-
-async function scaffoldApp(rootHandle: any) {
-  // await generateGitignoreFile()
-  // await generateReadmeFile()
-  // await generateDirectories()
-
-}
-
-/**
- * official modules, nuxt image, test-utils, content, ui, eslint, fonts, scripts, 
- * 
- * 
- *suggested nuxt modules - tailwindcss, i18n, color-mode, vue use, pinia
- * 
- * 
- * 
- */
 </script>
 
 <template>
-  <form @submit.prevent class="relative p-4">
-    <button @click="createProject">Open</button>
-    app name, srcDir, modules checkboxes, optional folders checkboxes, favicon upload, layouts folders,
+  <form @submit.prevent="" class="relative p-4">
+    <button @click="scaffoldApp">Open</button>
     <div class=" ">
       <h1 class="uppercase text-sm font-semibold text-slate-600">Quickly Scaffold your nuxt app on the web</h1>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
@@ -344,7 +74,7 @@ async function scaffoldApp(rootHandle: any) {
         </GlobalInfoCard>
       </div>
     </div>
-    <button @click="scaffoldApp"
+    <button
       class="mt-5 sticky bottom-[10px] flex w-full rounded-full text-white uppercase text-sm font-medium max-w-[230px] items-center justify-center p-5 bg-slate-800">Scaffold
       My App</button>
   </form>
