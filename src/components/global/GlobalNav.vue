@@ -4,6 +4,6 @@
             <nav><nuxt-link class="font-bold text-xl" to="/">Nuxt Scaffold</nuxt-link></nav>
             <dev-only><nuxt-link to="/roadmap" class="block">View Roadmap</nuxt-link></dev-only>
         </div>
-        <a href="https://github.com/jimoh-sodiq" class="text-white underline text-sm font-medium">Github</a>
+        <a href="https://github.com/jimoh-sodiq/nuxt-scaffold" class="text-white underline text-sm font-medium">Github</a>
     </div>
 </template>
