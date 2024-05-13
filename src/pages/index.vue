@@ -1,13 +1,10 @@
 <script setup lang="ts">
 // import { createFile } from "../index"
 
-type Module = {
-  name: string, version: string, dependency: boolean
-}
-
 const nuxtDirectories = [
   "assets", "components", "composables", "layouts", "middleware", "pages", "plugins", "server", "utils"
 ]
+
 
 // App State
 const selectedModules = ref<Array<Module>>([])
@@ -36,6 +33,7 @@ async function createProject(name: string, fileName: string, fileContent: string
   const dirHandle = await window.showDirectoryPicker();
 
   await generateDirectories(dirHandle, selectedDirectories.value)
+  await generateModuleDependentDirectories(dirHandle, selectedModules.value)
   await generateAppDotVueFile(dirHandle, selectedDirectories.value.includes("pages"), selectedDirectories.value.includes("layouts"))
 
   // use the same root handle these
@@ -43,10 +41,6 @@ async function createProject(name: string, fileName: string, fileContent: string
   await generateTailwindConfigFile(dirHandle)
   await generateTSConfigFile(dirHandle)
 }
-
-const nuxtModules = [
-
-]
 
 
 async function generateLayoutsDirectory(handle: any) {
@@ -174,6 +168,18 @@ async function generateDirectories(handle: any, directories: Array<string>) {
   })
 }
 
+async function generateModuleDependentDirectories(handle: any, modules: Array<Module>) {
+  modules.forEach(async (module: Module) => {
+    if (module.directories) {
+      module.directories.forEach(async (directory) => {
+        await createDirectory(handle, directory)
+      })
+    }
+  })
+}
+
+
+// generate stores directory
 
 
 async function scaffoldApp(rootHandle: any) {
@@ -187,7 +193,7 @@ async function scaffoldApp(rootHandle: any) {
  * official modules, nuxt image, test-utils, content, ui, eslint, fonts, scripts, 
  * 
  * 
- *suggested nuxt modules - tailwindcss, i18n, color-mode
+ *suggested nuxt modules - tailwindcss, i18n, color-mode, vue use, pinia
  * 
  * 
  * 
@@ -209,18 +215,14 @@ async function scaffoldApp(rootHandle: any) {
         </GlobalInfoCard>
         <GlobalInfoCard title="Nuxt official Modules">
           <div class="flex flex-wrap gap-4">
-            <GlobalCheckbox label="@nuxt/tailwind" />
-            <GlobalCheckbox label="@nuxt/tailwind" />
-            <GlobalCheckbox label="@nuxt/tailwind" />
-            <GlobalCheckbox label="@nuxt/tailwind" />
+            <GlobalCheckbox v-for="module in officialNuxtModules" :key="module.value" :value="module"
+              v-model="selectedModules" :label="module.name" />
           </div>
         </GlobalInfoCard>
         <GlobalInfoCard title="Suggested Nuxt Modules">
           <div class="flex flex-wrap gap-4">
-            <GlobalCheckbox label="@nuxt/tailwind" />
-            <GlobalCheckbox label="@nuxt/tailwind" />
-            <GlobalCheckbox label="@nuxt/tailwind" />
-            <GlobalCheckbox label="@nuxt/tailwind" />
+            <GlobalCheckbox v-for="module in suggestedModules" :key="module.value" :value="module"
+              v-model="selectedModules" :label="module.name" />
           </div>
         </GlobalInfoCard>
         <GlobalInfoCard title="Directories">
