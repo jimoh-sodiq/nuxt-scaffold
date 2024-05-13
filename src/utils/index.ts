@@ -3,7 +3,7 @@
  * @param parentHandle
  * @param name
  */
-async function createDirectory(parentHandle: any, name: string) {
+export async function createDirectory(parentHandle: any, name: string) {
   const createdDirectoryHandle = await parentHandle.getDirectoryHandle(name, {
     create: true,
   });
@@ -16,7 +16,7 @@ async function createDirectory(parentHandle: any, name: string) {
  * @param fileName
  * @param fileContent
  */
-async function createFile(
+export async function createFile(
   directoryHandle: any,
   fileName: string,
   fileContent?: string
@@ -41,7 +41,7 @@ type FileWithContent = {
  * @param directoryName
  * @param fileOptions
  */
-async function createDirectoryWithMultipleFiles(
+export async function createDirectoryWithMultipleFiles(
   parentHandle: any,
   directoryName: string,
   fileOptions: Array<FileWithContent>
@@ -55,7 +55,7 @@ async function createDirectoryWithMultipleFiles(
  * @param directoryHandle
  * @param data
  */
-async function createMultipleFiles(
+export async function createMultipleFiles(
   directoryHandle: any,
   data: Array<FileWithContent>
 ) {
@@ -71,7 +71,7 @@ async function createMultipleFiles(
  * @param fileName
  * @param fileContent
  */
-async function createDirectoryWithSingleFile(
+export async function createDirectoryWithSingleFile(
   parentHandle: any,
   directoryName: string,
   fileName: string,
@@ -87,7 +87,7 @@ async function createDirectoryWithSingleFile(
  * @param fileHandle
  * @param contents
  */
-async function writeFile(fileHandle: any, contents: string) {
+export async function writeFile(fileHandle: any, contents: string) {
   const writable = await fileHandle.createWritable();
   await writable.write(contents);
   await writable.close();

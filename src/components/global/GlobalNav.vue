@@ -1,5 +1,6 @@
 <template>
-    <div class="bg-slate-800 px-4 py-6 text-white">
-       <nav>Nuxt Quickstart</nav>
+    <div class="bg-slate-800 p-4 text-white flex items-center gap-x-4">
+       <nav><nuxt-link to="/">Nuxt Scaffold</nuxt-link></nav>
+       <nuxt-link to="/roadmap" class="block">View Roadmap</nuxt-link>
     </div>
 </template>
