@@ -16,7 +16,7 @@ export type Dependency = {
 export const officialNuxtModules: Array<Module>  = [
   {
     name: "nuxt content",
-    value: "'@nuxt/content'",
+    value: "@nuxt/content",
     version: "^2.12.1",
     devDependency: true,
     directories: ["content"],
@@ -28,14 +28,14 @@ export const  suggestedModules: Array<Module> = [
     name: "pinia",
     value: "@pinia/nuxt",
     version: "^2.1.7",
-    devDependency: true,
+    devDependency: false,
     directories: ["stores"],
   },
   {
     name: "vue-use",
     value: "@vueuse/nuxt",
     version: "^10.9.0",
-    devDependency: true,
+    devDependency: false,
     dependencies: [
       {
         name: "vue-use",
@@ -47,7 +47,7 @@ export const  suggestedModules: Array<Module> = [
   },
   {
     name: "tailwind",
-    value: "'@nuxtjs/tailwindcss'",
+    value: "@nuxtjs/tailwindcss",
     version: "^6.12.0",
     devDependency: true,
   },

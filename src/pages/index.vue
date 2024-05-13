@@ -12,24 +12,11 @@ const selectedDirectories = ref<Array<string>>(["public"])
 const srcDir = ref("src")
 const projectName = ref("nuxt-app")
 
+const modulesList = computed(() => {
+  return selectedModules.value.map(module => module.value)
+})
 
-
-function generateNuxtConfig({ srcDir = ".", modules = [] }: {
-  srcDir?: string, modules?: Array<string>
-}) {
-
-  let generatedModules = `${modules}`
-  return `
-  // https://nuxt.com/docs/api/configuration/nuxt-config
-  export default defineNuxtConfig({
-    devtools: { enabled: true },
-    srcDir: "${srcDir}",
-    modules: "[${generatedModules}]",
-  })
-  `
-}
-
-async function createProject(name: string, fileName: string, fileContent: string) {
+async function createProject() {
   const dirHandle = await window.showDirectoryPicker();
 
   await generateDirectories(dirHandle, selectedDirectories.value)
@@ -37,8 +24,12 @@ async function createProject(name: string, fileName: string, fileContent: string
   await generateAppDotVueFile(dirHandle, selectedDirectories.value.includes("pages"), selectedDirectories.value.includes("layouts"))
 
   // use the same root handle these
+  await generatePackageDotJsonFile(dirHandle, projectName.value, selectedModules.value)
+  await generateNuxtConfigFile(dirHandle, srcDir.value, modulesList.value)
   await generateGitignoreFile(dirHandle)
-  await generateTailwindConfigFile(dirHandle)
+  if (modulesList.value.includes('@nuxtjs/tailwindcss')) {
+    await generateTailwindConfigFile(dirHandle)
+  }
   await generateTSConfigFile(dirHandle)
 }
 
@@ -179,6 +170,46 @@ async function generateModuleDependentDirectories(handle: any, modules: Array<Mo
 }
 
 
+async function generateNuxtConfigFile(handle: any, srcDir: string, modules: Array<string>) {
+  let generatedModules = `${modules.map(module => `"${module}"`)}`
+  console.log(generatedModules)
+  let content = `
+  // https://nuxt.com/docs/api/configuration/nuxt-config
+  export default defineNuxtConfig({
+    devtools: { enabled: true },
+    srcDir: "${srcDir}",
+    modules: [${generatedModules}],
+  })
+  `
+  await createFile(handle, "nuxt.config.ts", content)
+}
+
+async function generatePackageDotJsonFile(handle: any, projectName: string, modules: Array<Module>) {
+
+  const devDependencies = `${modules.filter(module => module.devDependency == true).map(module => `    "${module.value}": "${module.version}"`).join(",\n")}`
+  const dependencies = `${modules.filter(module => module.devDependency == false).map(module => `    "${module.value}": "${module.version}"`).join(",\n")}`
+
+  let content = `
+  {
+  "name": "${projectName.split(" ").join("-")}",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
+  },
+  "devDependencies": {\n${devDependencies}\n  },
+  "dependencies": {\n${dependencies}\n  }
+}
+  `
+  await createFile(handle, "package.json", content)
+}
+
+
 // generate stores directory
 
 
@@ -201,7 +232,7 @@ async function scaffoldApp(rootHandle: any) {
 </script>
 
 <template>
-  <main class="relative p-4">
+  <form @submit.prevent class="relative p-4">
     <button @click="createProject">Open</button>
     app name, srcDir, modules checkboxes, optional folders checkboxes, favicon upload, layouts folders,
     <div class=" ">
@@ -209,8 +240,8 @@ async function scaffoldApp(rootHandle: any) {
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
         <GlobalInfoCard title="Application settings">
           <div class="grid md:flex flex-wrap lg:flex-nowrap gap-4">
-            <GlobalInput label="Project Name" placeholder="e.g nuxt-app" v-model="projectName" />
-            <GlobalInput label="Src Diriectory" placeholder="e.g src, source, project" v-model="srcDir" />
+            <GlobalInput label="Project Name" placeholder="e.g nuxt-app" required v-model.trim="projectName" />
+            <GlobalInput label="Src Directory" placeholder="e.g src, source, project" required v-model.trim="srcDir" />
           </div>
         </GlobalInfoCard>
         <GlobalInfoCard title="Nuxt official Modules">
@@ -237,5 +268,5 @@ async function scaffoldApp(rootHandle: any) {
     <button @click="scaffoldApp"
       class="mt-5 sticky bottom-[10px] flex w-full rounded-full text-white uppercase text-sm font-medium max-w-[230px] items-center justify-center p-5 bg-slate-800">Scaffold
       My App</button>
-  </main>
+  </form>
 </template>
