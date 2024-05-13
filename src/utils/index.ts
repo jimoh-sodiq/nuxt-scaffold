@@ -277,8 +277,7 @@ export async function generatePackageDotJsonFile(handle: any, projectName: strin
   const devDependencies = `${modules.filter(module => module.devDependency == true).map(module => `    "${module.value}": "${module.version}"`).join(",\n")}`
   const dependencies = `${modules.filter(module => module.devDependency == false).map(module => `    "${module.value}": "${module.version}"`).join(",\n")}`
 
-  let content = `
-  {
+  let content = `{
   "name": "${projectName.split(" ").join("-")}",
   "private": true,
   "type": "module",
