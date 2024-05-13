@@ -96,7 +96,10 @@ export async function writeFile(fileHandle: any, contents: string) {
 ////////////////////////////////////////////////////////////////////
 
 export async function generateTailwindConfigFile(rootHandle: any) {
-  await createFile(rootHandle, "tailwind.config.ts", `import type { Config } from "tailwindcss"\n
+  await createFile(
+    rootHandle,
+    "tailwind.config.ts",
+    `import type { Config } from "tailwindcss"\n
 export default <Partial<Config>>{
 	content: [
 	],
@@ -104,19 +107,24 @@ export default <Partial<Config>>{
 		extend: {},
 	},
 }
-`)
+`
+  );
 }
 
 ////////////////////////////////////////////////////////////////////
 
 export async function generateLayoutsDirectory(handle: any) {
-  await createDirectoryWithSingleFile(handle, "layouts", "default.vue", `
-<template>
+  await createDirectoryWithSingleFile(
+    handle,
+    "layouts",
+    "default.vue",
+    `<template>
   <div>
     <slot />
   </div>
 </template>
-  `)
+  `
+  );
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -198,32 +206,41 @@ bun run preview
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.`;
 
-  await createFile(rootHandle, "README.md", content)
+  await createFile(rootHandle, "README.md", content);
 }
 
 ////////////////////////////////////////////////////////////////////
 
 export async function generatePagesDirectory(handle: any) {
-  await createDirectoryWithSingleFile(handle, "pages", "index.vue", `<template>
+  await createDirectoryWithSingleFile(
+    handle,
+    "pages",
+    "index.vue",
+    `<template>
   <div>
     Nuxt Application Scaffold
   </div>
 </template>
-`)
+`
+  );
 }
 
 ////////////////////////////////////////////////////////////////////
 
-export async function generateAppDotVueFile(handle: any, pagesExist?: boolean, layoutExists?: boolean) {
+export async function generateAppDotVueFile(
+  handle: any,
+  pagesExist?: boolean,
+  layoutExists?: boolean
+) {
   let content = `<template>
   <h1>Hello World!</h1>
-</template>`
+</template>`;
 
   const pageContent = `<template>
   <div>
     <NuxtPage/>
   </div>
-</template>`
+</template>`;
 
   const layoutContent = `<template>
   <div>
@@ -231,34 +248,41 @@ export async function generateAppDotVueFile(handle: any, pagesExist?: boolean, l
       <NuxtPage/> 
     </NuxtLayout>
   </div>
-</template>`
+</template>`;
 
   if (pagesExist) {
-    content = pageContent
+    content = pageContent;
   }
   if (layoutExists) {
-    content = layoutContent
+    content = layoutContent;
   }
 
-  await createFile(handle, "app.vue", content)
+  await createFile(handle, "app.vue", content);
 }
 
 ////////////////////////////////////////////////////////////////////
 
-export async function generateModuleDependentDirectories(handle: any, modules: Array<Module>) {
+export async function generateModuleDependentDirectories(
+  handle: any,
+  modules: Array<Module>
+) {
   modules.forEach(async (module: Module) => {
     if (module.directories) {
       module.directories.forEach(async (directory) => {
-        await createDirectory(handle, directory)
-      })
+        await createDirectory(handle, directory);
+      });
     }
-  })
+  });
 }
 
 ////////////////////////////////////////////////////////////////////
 
-export async function generateNuxtConfigFile(handle: any, srcDir: string, modules: Array<string>) {
-  let generatedModules = `${modules.map(module => `"${module}"`)}`
+export async function generateNuxtConfigFile(
+  handle: any,
+  srcDir: string,
+  modules: Array<string>
+) {
+  let generatedModules = `${modules.map((module) => `"${module}"`)}`;
   let content = `
   // https://nuxt.com/docs/api/configuration/nuxt-config
   export default defineNuxtConfig({
@@ -266,16 +290,62 @@ export async function generateNuxtConfigFile(handle: any, srcDir: string, module
     srcDir: "${srcDir}",
     modules: [${generatedModules}],
   })
-  `
-  await createFile(handle, "nuxt.config.ts", content)
+  `;
+  await createFile(handle, "nuxt.config.ts", content);
 }
 
 ////////////////////////////////////////////////////////////////////
 
-export async function generatePackageDotJsonFile(handle: any, projectName: string, modules: Array<Module>) {
+export async function generatePackageDotJsonFile(
+  handle: any,
+  projectName: string,
+  modules: Array<Module>
+) {
+  let moduleDevDependencyList: Array<Dependency> = [];
+  let moduleDependencyList: Array<Dependency> = [];
 
-  const devDependencies = `${modules.filter(module => module.devDependency == true).map(module => `    "${module.value}": "${module.version}"`).join(",\n")}`
-  const dependencies = `${modules.filter(module => module.devDependency == false).map(module => `    "${module.value}": "${module.version}"`).join(",\n")}`
+  modules.forEach((module) => {
+    // Check if dependencies property exists and is not null
+    if (module.dependencies && module.dependencies !== null) {
+      // Loop through dependencies array and extract dependency information
+      if (module.devDependency) {
+        module.dependencies.forEach((dep) => {
+          moduleDevDependencyList.push({
+            name: dep.name,
+            value: dep.value,
+            version: dep.version,
+            devDependency: dep.devDependency,
+          });
+        });
+      } else {
+        module.dependencies.forEach((dep) => {
+          moduleDependencyList.push({
+            name: dep.name,
+            value: dep.value,
+            version: dep.version,
+            devDependency: dep.devDependency,
+          });
+        });
+      }
+    }
+  });
+
+  const devDependencies = `${modules
+    .filter((module) => module.devDependency == true)
+    .map((module) => `"${module.value}": "${module.version}"`)
+    .join(",\n")}`;
+  const dependencies = `${modules
+    .filter((module) => module.devDependency == false)
+    .map((module) => `    "${module.value}": "${module.version}"`)
+    .join(",\n")}`;
+  const moduleDevDependencies = `${moduleDevDependencyList
+    .filter((module) => module.devDependency == true)
+    .map((module) => `"${module.value}": "${module.version}"`)
+    .join(",\n")}`;
+  const moduleDependencies = `${moduleDependencyList
+    .filter((module) => module.devDependency == false)
+    .map((module) => `    "${module.value}": "${module.version}"`)
+    .join(",\n")}`;
 
   let content = `{
   "name": "${projectName.split(" ").join("-")}",
@@ -289,40 +359,59 @@ export async function generatePackageDotJsonFile(handle: any, projectName: strin
     "postinstall": "nuxt prepare",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
   },
-  "devDependencies": {\n${devDependencies}\n  },
-  "dependencies": {\n${dependencies}\n  }
+  "devDependencies": {
+    "@nuxt/devtools": "latest",
+    "nuxt": "^3.11.2",
+    "vue": "^3.3.8",
+    "vue-router": "^4.2.5",
+    ${devDependencies}${devDependencies.length > 0 ? "," : ""}
+    ${moduleDevDependencies}
+    },
+  "dependencies": {
+    ${dependencies}${dependencies.length > 0 ? "," : ""}
+    ${moduleDependencies}
+    }
 }
-  `
-  await createFile(handle, "package.json", content)
+  `;
+  await createFile(handle, "package.json", content);
 }
 
 ////////////////////////////////////////////////////////////////////
 
 export async function generateTSConfigFile(rootHandle: any) {
-  await createFile(rootHandle, "tsconfig.json", `{
+  await createFile(
+    rootHandle,
+    "tsconfig.json",
+    `{
   // https://nuxt.com/docs/guide/concepts/typescript
   "extends": "./.nuxt/tsconfig.json"
 }
-`)
+`
+  );
 }
-
 
 ////////////////////////////////////////////////////////////////////
 
 export async function generateServerDirectory(handle: any) {
-  await createDirectoryWithSingleFile(handle, "server", "tsconfig.json", `
+  await createDirectoryWithSingleFile(
+    handle,
+    "server",
+    "tsconfig.json",
+    `
 {
   "extends": "../.nuxt/tsconfig.server.json"
 }
-  `)
+  `
+  );
 }
-
 
 ////////////////////////////////////////////////////////////////////
 
-
 export async function generateGitignoreFile(rootHandle: any) {
-  await createFile(rootHandle, ".gitignore", `# Nuxt dev/build outputs
+  await createFile(
+    rootHandle,
+    ".gitignore",
+    `# Nuxt dev/build outputs
 .output
 .data
 .nuxt
@@ -347,25 +436,28 @@ logs
 .env.*
 !.env.example
 
-  `)
+  `
+  );
 }
-
 
 ////////////////////////////////////////////////////////////////////
 
-export async function generateDirectories(handle: any, directories: Array<string>) {
+export async function generateDirectories(
+  handle: any,
+  directories: Array<string>
+) {
   directories.forEach(async (directory: string) => {
-    if (directory == 'layouts') {
-      return await generateLayoutsDirectory(handle)
+    if (directory == "layouts") {
+      return await generateLayoutsDirectory(handle);
     }
-    if (directory == 'server') {
-      return await generateServerDirectory(handle)
+    if (directory == "server") {
+      return await generateServerDirectory(handle);
     }
     if (directory == "pages") {
-      return await generatePagesDirectory(handle)
+      return await generatePagesDirectory(handle);
     }
-    await createDirectory(handle, directory)
-  })
+    await createDirectory(handle, directory);
+  });
 }
 
 ////////////////////////////////////////////////////////////////////

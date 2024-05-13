@@ -40,7 +40,7 @@ export const  suggestedModules: Array<Module> = [
       {
         name: "vue-use",
         value: "@vueuse/core",
-        version: "version",
+        version: "^10.9.0",
         devDependency: true,
       },
     ],
