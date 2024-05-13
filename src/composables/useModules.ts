@@ -28,14 +28,14 @@ export const  suggestedModules: Array<Module> = [
     name: "pinia",
     value: "@pinia/nuxt",
     version: "^2.1.7",
-    devDependency: false,
+    devDependency: true,
     directories: ["stores"],
   },
   {
     name: "vue-use",
     value: "@vueuse/nuxt",
     version: "^10.9.0",
-    devDependency: false,
+    devDependency: true,
     dependencies: [
       {
         name: "vue-use",

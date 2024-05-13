@@ -42,8 +42,7 @@ async function scaffoldApp() {
 </script>
 
 <template>
-  <form @submit.prevent="" class="relative p-4">
-    <button @click="scaffoldApp">Open</button>
+  <form @submit.prevent="scaffoldApp" class="relative p-4">
     <div class=" ">
       <h1 class="uppercase text-sm font-semibold text-slate-600">Quickly Scaffold your nuxt app on the web</h1>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
