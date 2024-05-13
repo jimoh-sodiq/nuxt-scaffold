@@ -26,6 +26,7 @@ async function createProject() {
   // use the same root handle these
   await generatePackageDotJsonFile(dirHandle, projectName.value, selectedModules.value)
   await generateNuxtConfigFile(dirHandle, srcDir.value, modulesList.value)
+  await generateReadmeFile(dirHandle)
   await generateGitignoreFile(dirHandle)
   if (modulesList.value.includes('@nuxtjs/tailwindcss')) {
     await generateTailwindConfigFile(dirHandle)
@@ -53,9 +54,87 @@ async function generateServerDirectory(handle: any) {
   `)
 }
 
-async function generateReadmeFile(roothandle: any) {
-  // await createFile(roothandle, "README.md",)
+async function generateReadmeFile(rootHandle: any) {
+  const content = `# Nuxt 3 Minimal Starter
+
+Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+
+## Setup
+
+Make sure to install the dependencies:
+
+\`\`\`bash
+# npm
+npm install
+
+# pnpm
+pnpm install
+
+# yarn
+yarn install
+
+# bun
+bun install
+\`\`\`
+
+## Development Server
+
+Start the development server on \`http://localhost:3000\`:
+
+\`\`\`bash
+# npm
+npm run dev
+
+# pnpm
+pnpm run dev
+
+# yarn
+yarn dev
+
+# bun
+bun run dev
+\`\`\`
+
+## Production
+
+Build the application for production:
+
+\`\`\`bash
+# npm
+npm run build
+
+# pnpm
+pnpm run build
+
+# yarn
+yarn build
+
+# bun
+bun run build
+\`\`\`
+
+Locally preview production build:
+
+\`\`\`bash
+# npm
+npm run preview
+
+# pnpm
+pnpm run preview
+
+# yarn
+yarn preview
+
+# bun
+bun run preview
+\`\`\`
+
+Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.`;
+
+  await createFile(rootHandle, "README.md", content)
 }
+
+
 
 async function generateGitignoreFile(rootHandle: any) {
   await createFile(rootHandle, ".gitignore", `# Nuxt dev/build outputs
@@ -172,7 +251,6 @@ async function generateModuleDependentDirectories(handle: any, modules: Array<Mo
 
 async function generateNuxtConfigFile(handle: any, srcDir: string, modules: Array<string>) {
   let generatedModules = `${modules.map(module => `"${module}"`)}`
-  console.log(generatedModules)
   let content = `
   // https://nuxt.com/docs/api/configuration/nuxt-config
   export default defineNuxtConfig({
@@ -183,6 +261,7 @@ async function generateNuxtConfigFile(handle: any, srcDir: string, modules: Arra
   `
   await createFile(handle, "nuxt.config.ts", content)
 }
+
 
 async function generatePackageDotJsonFile(handle: any, projectName: string, modules: Array<Module>) {
 
