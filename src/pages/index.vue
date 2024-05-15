@@ -17,6 +17,10 @@ const modulesList = computed(() => {
 })
 
 async function scaffoldApp() {
+  if(!("showDirectoryPicker" in window)){
+    alert("Oops. your browser does not support the HTML5 file system access API")
+    return
+  }
   const dirPickerHandle = await window.showDirectoryPicker();
   const rootDir = await createDirectory(dirPickerHandle, projectName.value)
   const srcDirHandle = await createDirectory(rootDir, srcDir.value)
@@ -44,7 +48,8 @@ async function scaffoldApp() {
 <template>
   <form @submit.prevent="scaffoldApp" class="relative p-4">
     <div class=" ">
-      <h1 class="uppercase text-sm font-semibold text-slate-600">Quickly Scaffold your nuxt app on the web</h1>
+      <h1 class="uppercase text-sm font-semibold text-slate-600">Quickly Scaffold your nuxt app on the web then npm install</h1>
+      <p class="font-semibold text-slate-500 text-sm mt-1">Supported Browsers: <span class="text-green-600">Chrome 86, Edge 86, Opera 72</span> </p>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
         <GlobalInfoCard title="Application settings">
           <div class="grid md:flex flex-wrap lg:flex-nowrap gap-4">
