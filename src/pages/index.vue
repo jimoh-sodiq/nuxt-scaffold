@@ -48,7 +48,7 @@ async function scaffoldApp() {
 <template>
   <form @submit.prevent="scaffoldApp" class="relative p-4">
     <div class=" ">
-      <h1 class="uppercase text-sm font-semibold text-slate-600">Quickly Scaffold your nuxt app on the web then npm install</h1>
+      <h1 class="uppercase text-sm font-semibold text-slate-600">Quickly Scaffold your nuxt app on the web then install dependencies</h1>
       <p class="font-semibold text-slate-500 text-sm mt-1">Supported Browsers: <span class="text-green-600">Chrome 86, Edge 86, Opera 72</span> </p>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
         <GlobalInfoCard title="Application settings">
